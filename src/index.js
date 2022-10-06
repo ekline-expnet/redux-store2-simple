@@ -3,7 +3,7 @@
 import merge from 'merge'
 import * as Store2 from 'store2';
 
-const MODULE_NAME = '[Redux-Store2Storage-Simple]';
+const MODULE_NAME = '[Redux-Store2-Simple]';
 const NAMESPACE_DEFAULT = 'rls_';
 // const NAMESPACE_SEPARATOR_DEFAULT = '_'
 const STATES_DEFAULT = [];

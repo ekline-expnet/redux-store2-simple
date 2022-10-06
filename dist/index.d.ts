@@ -1,7 +1,7 @@
 import {Middleware} from "redux";
-import * as m from 'redux-localstorage-simple';
+import * as m from './';
 
-declare module 'redux-localstorage-simple' {
+declare module 'redux-store2-simple' {
   interface RLSOptions {
     states?: string[];
     ignoreStates?: string[];

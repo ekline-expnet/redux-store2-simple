@@ -16,7 +16,7 @@ import { applyMiddleware, createStore } from "redux"
 import reducer from "./reducer"
 
 // Import the necessary methods for saving and loading
-import { save, load } from "redux-localstorage-simple"
+import { save, load } from "redux-store2-simple"
 
 /*
     Saving to Storage is achieved using Redux 
@@ -254,7 +254,7 @@ const settingsReducerInitialState = {
 }
 ```
 
-Using `redux-localstorage-simple`'s `save()` method for the `settings` reducer would look like this:
+Using `redux-store2-simple`'s `save()` method for the `settings` reducer would look like this:
 
 ```js
 save({ states: ["settings"] })
@@ -295,9 +295,7 @@ To run tests for this package open the file 'test/test.html' in your browser. Be
 
 ## Removal of support for Immutable.js data structures
 
-Support for Immutable.js data structures has been removed as of version 1.4.0. If you require this functionality please install version 1.4.0 using the following command:
-
-`npm install --save redux-localstorage-simple@1.4.0`
+Support for Immutable.js data structures was removed.  It is not supported.
 
 ## Feedback
 

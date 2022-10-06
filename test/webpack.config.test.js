@@ -25,7 +25,7 @@ module.exports = {
   },
 
   output: {
-    // library: 'redux-localstorage-simple',
+    // library: 'redux-store2-simple',
     // libraryTarget: 'umd',
     filename: '[name].js',
     path: __dirname
