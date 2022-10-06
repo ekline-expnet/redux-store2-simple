@@ -1,7 +1,7 @@
 {
-  "name": "redux-localstorage-simple",
-  "version": "2.5.1",
-  "description": "Save and load Redux state to and from LocalStorage.",
+  "name": "redux-store2-simple",
+  "version": "1.0.0",
+  "description": "Save and load Redux state to and from LocalStorage or SessionStorage using store2.js.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -12,19 +12,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kilkelly/redux-localstorage-simple.git"
+    "url": "git+https://github.com/ekline-expnet/redux-store2-simple.git"
   },
   "keywords": [
     "redux",
     "localstorage",
     "immutablejs"
   ],
-  "author": "Frank Kilkelly",
+  "author": "Edward Kline <ekline@expr.net>",
+  "contributors": ["Frank Kilkelly"],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kilkelly/redux-localstorage-simple/issues"
+    "url": "https://github.com/ekline-expnet/redux-store2-simple/issues"
   },
-  "homepage": "https://github.com/kilkelly/redux-localstorage-simple#readme",
+  "homepage": "https://github.com/ekline-expnet/redux-store2-simple#readme",
   "dependencies": {
     "merge": "^2.1.1",
     "store2": "^2.14.2"
