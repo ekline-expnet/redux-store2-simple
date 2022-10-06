@@ -2,8 +2,12 @@
 
 module.exports = {
 
-  mode: 'production',
-
+  mode: 'development',
+  optimization: {
+    minimize: false
+  },
+  // Control how source maps are generated
+  devtool: 'source-map',
   entry: {
     test: [
       './test/test_.js'
