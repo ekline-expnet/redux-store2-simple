@@ -4,9 +4,13 @@ Save and load Redux state to and from LocalStorage or SessionStorage (refered to
 
 Forked from [redux-storage-simple](https://github.com/kilkelly/redux-localstorage-simple)
 
+Conversion to typescript begun.
+
 ## Installation
 
-For now, clone or download repo, add files from dist to your project.  
+For now, copy either the src/index.ts file to your project (and add store2.js and dependencies)
+or copy the dist folder and import from there.
+
 Will decide later if should publish to npm.
 
 ## Usage Example (ES6 code)
