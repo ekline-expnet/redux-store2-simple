@@ -54,10 +54,11 @@ applyMiddleware(save({session: true}))
 
 See the Usage Example above to get a better idea of how this works.
 
-#### Arguments
+#### save Arguments
+
 The `save` method takes a optional configuration object as an argument. It has the following properties:
 
-```
+```json
 {
     [Array states],
     [Array ignoreStates]
@@ -75,7 +76,7 @@ The `save` method takes a optional configuration object as an argument. It has t
 - debounce (Number, optional) - Debouncing period (in milliseconds) to wait before saving to Storage. Use this as a performance optimization if you feel you are saving to Storage too often. Recommended value: 500 - 1000 milliseconds
 - disableWarnings (Boolean, optional) - Any exceptions thrown by Storage will be logged as warnings in the JavaScript console by default, but can be silenced by setting `disableWarnings` to true.
 
-#### Examples
+#### save Examples
 
 Save entire state tree - EASIEST OPTION.
 
@@ -116,17 +117,8 @@ save({
 })
 ```
 
-Save specific parts of the state tree with the namespace "my_cool_app" and the namespace separator "::". The keys "my_cool_app::user" and "my_cool_app::products" will appear in Storage.
-
-```js
-save({
-    states: ["user", "products"],
-    namespace: "my_cool_app",
-    namespaceSeparator: "::"
-})
-```
-
 ### load([Object config])
+
 Loading Redux state from Storage happens during creation of the Redux store.  Be sure to indicate
 session=true in the load options if state resides in SessionStorage.
 
@@ -137,6 +129,7 @@ createStore(reducer, load())
 See the Usage Example above to get a better idea of how this works.
 
 #### Arguments
+
 The `load` method takes a optional configuration object as an argument. It has the following properties:
 
 ```
@@ -184,23 +177,15 @@ load({
 })
 ```
 
-Load specific parts of the state tree which was previously saved with the namespace "my_cool_app" and namespace separator "::".
-
-```js
-load({ 
-    states: ["user", "products"],
-    namespace: "my_cool_app",
-    namespaceSeparator: "::"
-})
-```
-
 ### combineLoads(...loads)
+
 If you provided more than one call to `save` in your Redux middleware you will need to use `combineLoads` for a more intricate loading process.
 
-#### Arguments
+#### combineLoads Arguments
+
 - loads - This method takes any number of `load` methods as arguments, with each load handling a different part of the state tree. In practice you will provide one `load` method to handle each `save` method provided in your Redux middleware.
 
-#### Example
+#### combineLoads Example
 
 Load parts of the state tree saved with different namespaces. Here are the `save` methods in your Redux middleware:
 
@@ -224,7 +209,7 @@ combineLoads(
 
 Clears all Redux state tree data from Storage. Note: only clears data which was saved using this module's functionality
 
-#### Arguments
+#### clear Arguments
 
 The `clear` method takes a optional configuration object as an argument. It has the following properties:
 
@@ -239,7 +224,8 @@ The `clear` method takes a optional configuration object as an argument. It has 
 - namespace - If you have saved your entire state tree or parts of your state tree under a namespace you will need to specify it in order to clear that data from Storage.
 - disableWarnings (Boolean, optional) - Any exceptions thrown by Storage will be logged as warnings in the JavaScript console by default, but can be silenced by setting `disableWarnings` to true.
 - session (Boolean, optional) - If true, state will be cleared from SessionStorage.  Value should match that used in the save method.
-#### Examples
+
+#### clear Examples
 
 Clear all Redux state tree data saved without a namespace.
 
@@ -257,7 +243,7 @@ clear({
 
 ## Advanced Usage
 
-In a more complex project you may find that you are saving unnecessary reducer data to Storage and would appreciate a more granular approach. Thankfully there is a way to do this. 
+In a more complex project you may find that you are saving unnecessary reducer data to Storage and would appreciate a more granular approach. Thankfully there is a way to do this.
 
 First let's look at a normal example. Let's say you have a reducer called `settings` and its state tree looks like this:
 
