@@ -58,7 +58,7 @@ See the Usage Example above to get a better idea of how this works.
 
 The `save` method takes a optional configuration object as an argument. It has the following properties:
 
-```json
+```
 {
     [Array states],
     [Array ignoreStates]
