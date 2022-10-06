@@ -1,13 +1,20 @@
 'use strict'
 
 import { legacy_createStore, applyMiddleware, combineReducers } from 'redux'
-import { save, load, clear } from '../src/index' // redux-localstorage-simple dist
+import { save as saveMiddleware, load, clear } from '../src/index' // redux-localstorage-simple dist
 import equal from 'deep-equal'
 
-const NAMESPACE_DEFAULT = 'redux_localstorage_simple'
+const NAMESPACE_DEFAULT = 'rls_'
 const NAMESPACE_TEST = 'namespace_test'
 const NAMESPACE_SEPARATOR_TEST = '**'
+const USE_SESSION = true;
+const storeToCheck = USE_SESSION ? sessionStorage : localStorage;
 
+const save = (opts) => {
+  const saveOpts = opts || {};
+  saveOpts.session = USE_SESSION;
+  return saveMiddleware(saveOpts);
+}
 // -------------------------------------------------------------------------------
 
 // Actions
@@ -95,7 +102,7 @@ var reducerMultipleLevels = function (state = initialStateReducerMultipleLevels,
 // -------------------------------------------------------------------------------
 
 {
-  if (typeof localStorage === 'object') {
+  if (typeof storeToCheck === 'object') {
     outputTestResult('test0', true)
   } else {
     outputTestResult('test0', false)
@@ -122,7 +129,7 @@ clearTestData()
   // Store which loads from LocalStorage
   let storeB = legacy_createStore(
     combineReducers({ reducerA, reducerB }),
-    load()
+    load({ session: USE_SESSION })
   )
 
   let testResult = equal(
@@ -140,7 +147,6 @@ clearTestData()
 
 {
   let middleware = save({ states: ['reducerA'] })
-
   // Store which saves to LocalStorage
   let storeA = applyMiddleware(middleware)(legacy_createStore)(
     combineReducers({ reducerA, reducerB }),
@@ -153,9 +159,8 @@ clearTestData()
   // Store which loads from LocalStorage
   let storeB = legacy_createStore(
     combineReducers({ reducerA, reducerB }),
-    load({ states: ['reducerA'] })
+    load({ states: ['reducerA'], session: USE_SESSION })
   )
-
   let testResult = equal(
     storeA.getState(),
     storeB.getState()
@@ -163,7 +168,6 @@ clearTestData()
 
   outputTestResult('test2', testResult)
 }
-
 // -------------------------------------------------------------------------------
 // TEST 3 - Save and load entire Redux state tree under a specified namespace
 // -------------------------------------------------------------------------------
@@ -184,7 +188,7 @@ clearTestData()
   // Store which loads from LocalStorage
   let storeB = legacy_createStore(
     combineReducers({ reducerA, reducerB }),
-    load({ namespace: NAMESPACE_TEST })
+    load({ namespace: NAMESPACE_TEST, session: USE_SESSION })
   )
 
   let testResult = equal(
@@ -215,7 +219,7 @@ clearTestData()
   // Store which loads from LocalStorage
   let storeB = legacy_createStore(
     combineReducers({ reducerA, reducerB }),
-    load({ states: ['reducerA'], namespace: NAMESPACE_TEST })
+    load({ states: ['reducerA'], session: USE_SESSION, namespace: NAMESPACE_TEST })
   )
 
   let testResult = equal(
@@ -246,7 +250,7 @@ clearTestData()
   // Store which loads from LocalStorage
   let storeB = legacy_createStore(
     combineReducers({ reducerA, reducerB }),
-    load({ namespace: NAMESPACE_TEST, namespaceSeparator: NAMESPACE_SEPARATOR_TEST })
+    load({ namespace: NAMESPACE_TEST, session: USE_SESSION })
   )
 
   let testResult = equal(
@@ -277,7 +281,7 @@ clearTestData()
   // Store which loads from LocalStorage
   let storeB = legacy_createStore(
     combineReducers({ reducerA, reducerB }),
-    load({ states: ['reducerA'], namespace: NAMESPACE_TEST, namespaceSeparator: NAMESPACE_SEPARATOR_TEST })
+    load({ states: ['reducerA'], namespace: NAMESPACE_TEST, session: USE_SESSION })
   )
 
   let testResult = equal(
@@ -295,20 +299,20 @@ clearTestData()
 
 {
   // Store that saves without a namespace
-  let storeA = applyMiddleware(save())(legacy_createStore)(reducerA, initialStateReducerA)
+  let storeA = applyMiddleware(save({ session: USE_SESSION }))(legacy_createStore)(reducerA, initialStateReducerA)
   // Trigger a save to LocalStorage using a noop action
   storeA.dispatch({ type: NOOP })
 
   // Store that saves WITH a namespace
-  let storeB = applyMiddleware(save({ namespace: NAMESPACE_TEST }))(legacy_createStore)(reducerA, initialStateReducerA)
+  let storeB = applyMiddleware(save({ session: USE_SESSION, namespace: NAMESPACE_TEST }))(legacy_createStore)(reducerA, initialStateReducerA)
   // Trigger a save to LocalStorage using a noop action
   storeB.dispatch({ type: NOOP })
 
   // Perform the LocalStorage clearing
-  clear()
+  clear({ session: USE_SESSION })
 
   outputTestResult('test7', true) // Default test result to true
-  for (let key in localStorage) {
+  for (let key in storeToCheck) {
     // If data found with default namespace then clearing data has failed
     if (key.slice(0, NAMESPACE_DEFAULT.length) === NAMESPACE_DEFAULT) {
       // Fail the test
@@ -321,10 +325,9 @@ clearTestData()
 // TEST 8 - Clear Redux state tree data saved with a specific namespace
 // -------------------------------------------------------------------------------
 clearTestData()
-
 {
   // Store that saves without a namespace
-  let storeA = applyMiddleware(save())(legacy_createStore)(reducerA, initialStateReducerA)
+  let storeA = applyMiddleware(save({ namespace: NAMESPACE_TEST }))(legacy_createStore)(reducerA, initialStateReducerA)
   // Trigger a save to LocalStorage using a noop action
   storeA.dispatch({ type: NOOP })
 
@@ -334,10 +337,10 @@ clearTestData()
   storeB.dispatch({ type: NOOP })
 
   // Perform the LocalStorage clearing
-  clear({ namespace: NAMESPACE_TEST })
+  clear({ namespace: NAMESPACE_TEST, session: USE_SESSION })
 
-  outputTestResult('test8', true) // Default test result to true
-  for (let key in localStorage) {
+  outputTestResult('test8', true); // Default test result to true
+  for (let key in storeToCheck) {
     // If data found with specified namespace then clearing data has failed
     if (key.slice(0, NAMESPACE_TEST.length) === NAMESPACE_TEST) {
       // Fail the test
@@ -345,7 +348,6 @@ clearTestData()
     }
   }
 }
-
 // -------------------------------------------------------------------------------
 // TEST 9 - Save Redux state with debouncing
 // -------------------------------------------------------------------------------
@@ -356,12 +358,12 @@ clearTestData()
   let debouncingPeriod = 500
 
   // Store that saves with a debouncing period
-  let storeA = applyMiddleware(save({debounce: debouncingPeriod}))(legacy_createStore)(reducerB, initialStateReducerB)
+  let storeA = applyMiddleware(save({ debounce: debouncingPeriod }))(legacy_createStore)(reducerB, initialStateReducerB)
   // Trigger a save to LocalStorage using an add action
   storeA.dispatch({ type: ADD })
 
   // Store which loads from LocalStorage
-  let storeB = legacy_createStore(reducerB, load())
+  let storeB = legacy_createStore(reducerB, load({ session: USE_SESSION }))
   // This test result should fail because the debouncing period has
   // delayed the data being written to LocalStorage
   let testResult = storeB.getState()['y'] === 1
@@ -372,12 +374,12 @@ clearTestData()
   // LocalStorage dataand the test should pass
   setTimeout(function () {
     // Store which loads from LocalStorage
-    let storeC = legacy_createStore(reducerB, load())
+    let storeC = legacy_createStore(reducerB, load({ session: USE_SESSION }))
     let testResult = storeC.getState()['y'] === 1
     outputTestResult('test9', testResult)
 
     // Perform the LocalStorage clearing
-    clear()
+    clear({ session: USE_SESSION })
   }, debouncingPeriod + 200)
 }
 
@@ -409,6 +411,7 @@ clearTestData()
     load({
       states: states,
       namespace: NAMESPACE_TEST,
+      session: USE_SESSION,
       preloadedState: initialStateReducersPlusMultipleLevels
     })
   )
@@ -417,13 +420,18 @@ clearTestData()
     storeA.getState(),
     storeB.getState()
   )
-
+  // Perform the LocalStorage clearing
+  clear({
+    namespace: NAMESPACE_TEST,
+    session: USE_SESSION,
+  });
   outputTestResult('test10', testResult)
 }
 
 // -------------------------------------------------------------------------------
 // TEST 11 - Save and load entire Redux state tree except the states we ignore
 // -------------------------------------------------------------------------------
+
 clearTestData()
 
 {
@@ -447,19 +455,18 @@ clearTestData()
     }
   }
 
-  let middleware = save({ ignoreStates: ['z1', 'z3'] })
+  let middleware = save({ session: USE_SESSION, ignoreStates: ['z1', 'z3'] })
 
   // Store which saves to LocalStorage
   let storeA = applyMiddleware(middleware)(legacy_createStore)(reducer)
 
   // Trigger a save to LocalStorage using a noop action
   storeA.dispatch({ type: NOOP })
-
   // Store which loads from LocalStorage
   let storeB = legacy_createStore(
     reducer,
-    load()
-  )
+    load({ session: USE_SESSION })
+  );
 
   let testResult = equal(
     successState,
@@ -472,17 +479,17 @@ clearTestData()
 // -------------------------------------------------------------------------------
 
 // Output result of test in browser
-function outputTestResult (test, testResult) {
+function outputTestResult(test, testResult) {
   document.getElementById(test).innerHTML = (testResult) ? 'SUCCESS' : 'FAILED'
   document.getElementById(test).className = (testResult) ? 'true' : 'false'
 }
 
 // Clear test data in LocalStorage
-function clearTestData () {
-  for (let key in localStorage) {
+function clearTestData() {
+  for (let key in storeToCheck) {
     if (key.slice(0, NAMESPACE_DEFAULT.length) === NAMESPACE_DEFAULT ||
-        key.slice(0, NAMESPACE_TEST.length) === NAMESPACE_TEST) {
-      localStorage.removeItem(key)
+      key.slice(0, NAMESPACE_TEST.length) === NAMESPACE_TEST) {
+        storeToCheck.removeItem(key)
     }
   }
 }
