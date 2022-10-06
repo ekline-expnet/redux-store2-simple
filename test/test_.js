@@ -1,7 +1,7 @@
 'use strict'
 
 import { legacy_createStore, applyMiddleware, combineReducers } from 'redux'
-import { save as saveMiddleware, load, clear } from '../src/index' // redux-store2-simple dist
+import { save as saveMiddleware, load, clear } from '../dist/index' // redux-store2-simple dist
 import equal from 'deep-equal'
 
 const NAMESPACE_DEFAULT = 'rls_'

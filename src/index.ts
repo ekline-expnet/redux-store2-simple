@@ -1,13 +1,38 @@
 'use strict'
 
 import merge from 'merge'
-import * as Store2 from 'store2';
+import * as store2 from 'store2';
+import { Middleware } from "redux";
+
+const Store2 = (store2 as unknown) as store2.StoreType;
+
+export interface RS2SOptions {
+  states?: string[];
+  ignoreStates?: string[];
+  namespace?: string;
+  session?: boolean;
+  debounce?: number;
+  disableWarnings?: boolean;
+}
+export interface LoadOptions {
+  states?: string[];
+  immutablejs?: boolean;
+  namespace?: string;
+  session?: boolean;
+  preloadedState?: {};
+  disableWarnings?: boolean;
+}
+export interface ClearOptions {
+  namespace?: string;
+  disableWarnings?: boolean;
+  session?: boolean;
+}
 
 const MODULE_NAME = '[Redux-Store2-Simple]';
-const NAMESPACE_DEFAULT = 'rls_';
+const NAMESPACE_DEFAULT = 'rs2s_';
 // const NAMESPACE_SEPARATOR_DEFAULT = '_'
-const STATES_DEFAULT = [];
-const IGNORE_STATES_DEFAULT = [];
+const STATES_DEFAULT: string[] = [];
+const IGNORE_STATES_DEFAULT: string[] = [];
 const DEBOUNCE_DEFAULT = 0;
 const IMMUTABLEJS_DEFAULT = false;
 const DISABLE_WARNINGS_DEFAULT = false;
@@ -27,15 +52,15 @@ let debounceTimeouts = new Map();
 
 */
 
-function warnConsole(warningMessage) {
+function warnConsole(warningMessage: string) {
   console.warn(MODULE_NAME, warningMessage);
 }
 
-function warnSilent(_warningMessage) {
+function warnSilent(_warningMessage: string) {
   // Empty
 }
 
-const warn = disableWarnings => (disableWarnings ? warnSilent : warnConsole);
+const warn = (disableWarnings: boolean) => (disableWarnings ? warnSilent : warnConsole);
 
 // ---------------------------------------------------
 /* lensPath
@@ -62,7 +87,7 @@ const warn = disableWarnings => (disableWarnings ? warnSilent : warnConsole);
   123
 */
 
-function lensPath(path, obj) {
+function lensPath(path: string[], obj: object): any {
   if (obj === undefined) {
     return null
   } else if (path.length === 1) {
@@ -101,8 +126,8 @@ function lensPath(path, obj) {
   }
 */
 
-function realiseObject(objectPath, objectInitialValue = {}) {
-  function realiseObject_(objectPathArr, objectInProgress) {
+function realiseObject(objectPath: string, objectInitialValue = {}) {
+  function realiseObject_(objectPathArr: string[], objectInProgress: object): any {
     if (objectPathArr.length === 0) {
       return objectInProgress;
     } else {
@@ -112,7 +137,7 @@ function realiseObject(objectPath, objectInitialValue = {}) {
   return realiseObject_(objectPath.split('.').reverse(), objectInitialValue)
 }
 
-function getStoreFromOptions(opts) {
+function getStoreFromOptions(opts: RS2SOptions) {
   const { session = false, namespace } = opts || {};
   let store = Store2.local;
   if (session) {
@@ -129,71 +154,63 @@ function getStoreFromOptions(opts) {
 // ---------------------------------------------------
 // SafeLocalStorage wrapper to handle the minefield of exceptions
 // that localStorage can throw. JSON.parse() is handled here as well.
-function SafeLocalStorage(warnFn, storageOpts) {
-  this.store = getStoreFromOptions(storageOpts);
-  this.warnFn = warnFn || warnConsole;
-}
-
-Object.defineProperty(SafeLocalStorage.prototype, 'length', {
-  get: function length() {
+class SafeLocalStorage {
+  public store: store2.StoreBase;
+  public warnFn: (m:string)=>void;
+  constructor(warnFn: (m:string)=>void, storageOpts: RS2SOptions) {
+    this.store = getStoreFromOptions(storageOpts);
+    this.warnFn = warnFn || warnConsole;
+  }
+  public get length() {
     try {
       return this.store.length;
     } catch (err) {
       this.warnFn(err);
     }
-    return 0
-  },
-  configurable: true,
-  enumerable: true
-});
-
-SafeLocalStorage.prototype.key = function key(ind) {
-  try {
-    const keys = this.store.keys();
-    return keys[ind];
-  } catch (err) {
-    this.warnFn(err);
+    return 0;
   }
-  return null
-}
-
-SafeLocalStorage.prototype.setItem = function setItem(key, val) {
-  try {
-    this.store.set(key, val);
-  } catch (err) {
-    this.warnFn(err);
-  }
-}
-
-SafeLocalStorage.prototype.getItem = function getItem(key) {
-  try {
-    if(typeof key !== 'string') {
-      return this.store.getAll();
+  public key(ind: number) {
+    try {
+      const keys = this.store.keys();
+      return keys[ind];
+    } catch (err) {
+      this.warnFn(err);
     }
-    return this.store.get(key);
-  } catch (err) {
-    this.warnFn(err);
+    return null
   }
-  return null
-}
-
-SafeLocalStorage.prototype.removeItem = function removeItem(key) {
-  try {
-    this.store.remove(key);
-  } catch (err) {
-    this.warnFn(err);
+  public setItem(key: string, val: any) {
+    try {
+      this.store.set(key, val);
+    } catch (err) {
+      this.warnFn(err);
+    }
+  }
+  public getItem(key?: string) {
+    try {
+      if (typeof key !== 'string') {
+        return this.store.getAll();
+      }
+      return this.store.get(key);
+    } catch (err) {
+      this.warnFn(err);
+    }
+    return null;
+  }
+  public removeItem(key: string) {
+    try {
+      this.store.remove(key);
+    } catch (err) {
+      this.warnFn(err);
+    }
+  }
+  public clear() {
+    try {
+      this.store.clearAll();
+    } catch (err) {
+      this.warnFn(err);
+    }
   }
 }
-
-SafeLocalStorage.prototype.clear = function clear() {
-  try {
-    this.store.clearAll();
-  } catch (err) {
-    this.warnFn(err);
-  }
-}
-
-
 // ---------------------------------------------------
 
 /**
@@ -248,12 +265,12 @@ export function save({
   session = false,
   debounce = DEBOUNCE_DEFAULT,
   disableWarnings = DISABLE_WARNINGS_DEFAULT
-} = {}) {
+}: RS2SOptions = {}): Middleware {
   return store => next => action => {
     // Bake disableWarnings into the warn function
     const warn_ = warn(disableWarnings);
     const returnValue = next(action);
-    let state_;
+    let state_: object | undefined;
 
     // Validate 'states' parameter
     if (!isArray(states)) {
@@ -315,16 +332,16 @@ export function save({
       debounceTimeouts.set(
         states + namespace,
         setTimeout(function () {
-          _save(states, namespace);
+          _save();
         }, debounce)
       )
       // No debouncing necessary so save to LocalStorage right now
     } else {
-      _save(states, namespace)
+      _save();
     }
 
     // Digs into rootState for the data to put in LocalStorage
-    function getStateForLocalStorage(state, rootState) {
+    function getStateForLocalStorage(state:string, rootState:object) {
       const delimiter = '.'
 
       if (state.split(delimiter).length > 1) {
@@ -394,10 +411,9 @@ export function load({
   immutablejs = IMMUTABLEJS_DEFAULT,
   namespace = NAMESPACE_DEFAULT,
   session = false,
-  // namespaceSeparator = NAMESPACE_SEPARATOR_DEFAULT,
   preloadedState = {},
   disableWarnings = DISABLE_WARNINGS_DEFAULT
-} = {}) {
+}: LoadOptions = {}): object {
   // Bake disableWarnings into the warn function
   const warn_ = warn(disableWarnings);
 
@@ -412,12 +428,6 @@ export function load({
     console.error(MODULE_NAME, "'namespace' parameter in 'load()' method was passed a non-string value. Setting default value instead. Check your 'load()' method.");
     namespace = NAMESPACE_DEFAULT;
   }
-
-  // Validate 'namespaceSeparator' parameter
-  // if (!isString(namespaceSeparator)) {
-  //   console.error(MODULE_NAME, "'namespaceSeparator' parameter in 'load()' method was passed a non-string value. Setting default value instead. Check your 'load()' method.")
-  //   namespaceSeparator = NAMESPACE_SEPARATOR_DEFAULT
-  // }
 
   // Display immmutablejs deprecation notice if developer tries to utilise it
   if (immutablejs === true) {
@@ -465,7 +475,7 @@ export function load({
     )
 */
 
-export function combineLoads(...loads) {
+export function combineLoads(...loads: object[]): object {
   let combinedLoad = {};
 
   loads.forEach(load => {
@@ -508,7 +518,7 @@ export function clear({
   namespace = NAMESPACE_DEFAULT,
   disableWarnings = DISABLE_WARNINGS_DEFAULT,
   session = false
-} = {}) {
+}: ClearOptions = {}): void {
   // Bake disableWarnings into the warn function
   const warn_ = warn(disableWarnings);
 
@@ -534,26 +544,26 @@ export function clear({
 // ---------------------------------------------------
 // Utility functions
 
-function isArray(value) {
+function isArray(value: any) {
   return Object.prototype.toString.call(value) === '[object Array]';
 }
 
-function isString(value) {
+function isString(value: any) {
   return typeof value === 'string';
 }
 
-function isInteger(value) {
+function isInteger(value: any) {
   return typeof value === 'number' &&
     isFinite(value) &&
     Math.floor(value) === value;
 }
 
-function isObject(value) {
+function isObject(value: any) {
   return value !== null && typeof value === 'object';
 }
 
 // Removes ignored states from the main state object
-function handleIgnoreStates(ignoreStates, stateFull) {
+function handleIgnoreStates(ignoreStates: string[], stateFull: object) {
   let stateFullMinusIgnoreStates = Object.entries(stateFull).reduce(function (acc, [key, value]) {
     if (ignoreStates.indexOf(key) === -1) {
       acc[key] = stateFull[key];
