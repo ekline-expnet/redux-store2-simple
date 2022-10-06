@@ -42,7 +42,7 @@ const store = createStoreWithMiddleware(
 
 ### save([Object config])
 
-Saving to Storage or SessionStorage is achieved using [Redux middleware](http://redux.js.org/docs/advanced/Middleware.html) and [Store2](https://github.com/nbubna/store); Redux state is saved each time an action is handled by your reducer. You will need to pass the `save` method into Redux's `applyMiddleware` method, like so...
+Saving to Storage is achieved using [Redux middleware](http://redux.js.org/docs/advanced/Middleware.html) and [Store2](https://github.com/nbubna/store); Redux state is saved each time an action is handled by your reducer. You will need to pass the `save` method into Redux's `applyMiddleware` method, like so...
 
 ```js
 // for Storage
