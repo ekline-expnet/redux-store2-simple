@@ -1,12 +1,13 @@
 # Redux-Store2-Simple
 
-Save and load Redux state to and from LocalStorage or SessionStorage.
+Save and load Redux state to and from LocalStorage or SessionStorage (refered to hereafter as Storage).
+
 Forked from [redux-storage-simple](https://github.com/kilkelly/redux-localstorage-simple)
 
 ## Installation
-```sh
-npm install --save redux-localstorage-simple
-```
+
+For now, clone or download repo, add files from dist to your project.  
+Will decide later if should publish to npm.
 
 ## Usage Example (ES6 code)
 
