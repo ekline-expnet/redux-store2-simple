@@ -128,7 +128,7 @@ createStore(reducer, load())
 
 See the Usage Example above to get a better idea of how this works.
 
-#### Arguments
+#### load Arguments
 
 The `load` method takes a optional configuration object as an argument. It has the following properties:
 
@@ -148,7 +148,7 @@ The `load` method takes a optional configuration object as an argument. It has t
 - preloadedState (Object, optional) - Passthrough for the `preloadedState` argument in Redux's `createStore` method. See section **Advanced Usage** below.
 - disableWarnings (Boolean, optional) - When you first try to a load a state from Storage you will see a warning in the JavaScript console informing you that this state load is invalid. This is because the `save` method hasn't been called yet and this state has yet to been written to Storage. You may not care to see this warning so to disable it set `disableWarnings` to true. Any exceptions thrown by Storage will also be logged as warnings by default, but can be silenced by setting `disableWarnings` to true.
 
-#### Examples
+#### load Examples
 
 Load entire state tree - EASIEST OPTION.
 
